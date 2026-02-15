@@ -1,16 +1,28 @@
-# React + Vite
+# Premium Python Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, "nice" dashboard built with Python and CustomTkinter.
 
-Currently, two official plugins are available:
+## Features
+- **Real-time Clock:** Displays current time, date, and greeting.
+- **Weather Widget:** Integrates with OpenWeatherMap API (with mock fallback).
+- **Music Widget:** Tracks Spotify listening via Last.fm API.
+- **Modern UI:** Built with CustomTkinter for a sleek, dark glass-like appearance.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Codebase Diversity
+This project includes 10 different types of code/files:
+1. Python (.py)
+2. Bash (.sh)
+3. JSON (.json)
+4. YAML (.yml)
+5. SQL (.sql)
+6. Markdown (.md)
+7. TOML (.toml)
+8. Makefile
+9. ENV (.env)
+10. XML (.xml)
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Setup
+```bash
+pip install customtkinter requests pillow python-dotenv
+python3 main.py
+```

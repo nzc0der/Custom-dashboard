@@ -1,0 +1,14 @@
+[project]
+name = "premium-dashboard"
+version = "1.0.0"
+description = "A premium dashboard using CustomTkinter"
+dependencies = [
+    "customtkinter",
+    "requests",
+    "pillow",
+    "python-dotenv"
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"

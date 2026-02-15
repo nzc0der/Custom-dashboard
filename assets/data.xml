@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dashboard>
+    <version>1.0.0</version>
+    <author>Jules</author>
+    <assets>
+        <icon type="weather" path="assets/weather.png" />
+        <icon type="music" path="assets/music.png" />
+    </assets>
+</dashboard>
