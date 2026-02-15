@@ -1,55 +1,55 @@
-import requests
-import os
+import spotipy
+from spotipy.oauth2 import SpotifyOAuth
+
+CLIENT_ID = "CLIENT_ID_HERE"
+CLIENT_SECRET = "CLIENT_SECRET_HERE"
+# Your fixed ngrok URL
+REDIRECT_URI = "https://realizable-expeditiously-sariah.ngrok-free.dev/callback"
+
+SCOPE = "user-read-currently-playing user-read-playback-state"
 
 class MusicService:
-    def __init__(self, api_key=None, username="r_v_s_"):
-        self.api_key = api_key or os.getenv("LASTFM_API_KEY")
-        self.username = username
-        self.base_url = "http://ws.audioscrobbler.com/2.0/"
+    def __init__(self):
+        self.sp = spotipy.Spotify(
+            auth_manager=SpotifyOAuth(
+                client_id=CLIENT_ID,
+                client_secret=CLIENT_SECRET,
+                redirect_uri=REDIRECT_URI,
+                scope=SCOPE,
+                open_browser=True,  # will open browser to log in
+                cache_path=".spotifycache"
+            )
+        )
 
     def get_now_playing(self):
-        """Fetches the currently playing track from Last.fm or returns mock data."""
-        if not self.api_key or self.api_key == "YOUR_API_KEY":
-            return self._get_mock_data()
-
         try:
-            params = {
-                "method": "user.getrecenttracks",
-                "user": self.username,
-                "api_key": self.api_key,
-                "format": "json",
-                "limit": 1
-            }
-            response = requests.get(self.base_url, params=params, timeout=5)
-            response.raise_for_status()
-            data = response.json()
+            result = self.sp.current_user_playing_track()
 
-            track = data["recenttracks"]["track"][0]
-            is_playing = track.get("@attr", {}).get("nowplaying") == "true"
+            if not result or not result.get("item"):
+                return {
+                    "track": "Nothing Playing",
+                    "artist": "",
+                    "album": "",
+                    "image": None,
+                    "is_playing": False
+                }
+
+            item = result["item"]
 
             return {
-                "track": track["name"],
-                "artist": track["artist"]["#text"],
-                "album": track["album"]["#text"],
-                "image": track["image"][-1]["#text"] if track["image"] else None,
-                "is_playing": is_playing,
-                "is_mock": False
+                "track": item["name"],
+                "artist": ", ".join(a["name"] for a in item["artists"]),
+                "album": item["album"]["name"],
+                "image": item["album"]["images"][0]["url"] if item["album"]["images"] else None,
+                "is_playing": result["is_playing"]
             }
+
         except Exception as e:
-            print(f"Last.fm API Error: {e}")
-            return self._get_mock_data()
-
-    def _get_mock_data(self):
-        """Returns mock track data."""
-        return {
-            "track": "Starboy",
-            "artist": "The Weeknd",
-            "album": "Starboy",
-            "image": "https://lastfm.freetls.fastly.net/i/u/300x300/e9d6d5669b32e01b446f7f1412e6b208.png",
-            "is_playing": True,
-            "is_mock": True
-        }
-
-if __name__ == "__main__":
-    service = MusicService()
-    print(service.get_now_playing())
+            print("Spotify error:", e)
+            return {
+                "track": "Spotify Error",
+                "artist": "",
+                "album": "",
+                "image": None,
+                "is_playing": False
+            }
