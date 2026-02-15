@@ -6,7 +6,8 @@ dependencies = [
     "customtkinter",
     "requests",
     "pillow",
-    "python-dotenv"
+    "python-dotenv",
+    "spotipy"
 ]
 
 [build-system]

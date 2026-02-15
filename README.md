@@ -5,8 +5,9 @@ A modern, "nice" dashboard built with Python and CustomTkinter.
 ## Features
 - **Real-time Clock:** Displays current time, date, and greeting.
 - **Weather Widget:** Integrates with OpenWeatherMap API (with mock fallback).
-- **Music Widget:** Tracks Spotify listening via Last.fm API.
-- **Modern UI:** Built with CustomTkinter for a sleek, dark glass-like appearance.
+- **Music Widget:** Supports **Spotify API** (via `spotipy`) and falls back to **Last.fm** or mock data.
+- **Inspiration Widget:** Displays daily quotes.
+- **Modern UI:** Built with CustomTkinter for a sleek, dark appearance.
 
 ## Codebase Diversity
 This project includes 10 different types of code/files:
@@ -22,7 +23,15 @@ This project includes 10 different types of code/files:
 10. XML (.xml)
 
 ## Setup
-```bash
-pip install customtkinter requests pillow python-dotenv
-python3 main.py
-```
+1. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. Configure environment variables in `.env`:
+   - `OPENWEATHER_API_KEY`: Get from [OpenWeatherMap](https://openweathermap.org/api).
+   - `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`: Get from [Spotify Developer Dashboard](https://developer.spotify.com/dashboard).
+   - `LASTFM_API_KEY`: (Optional fallback) Get from [Last.fm API](https://www.last.fm/api).
+3. Run the dashboard:
+   ```bash
+   python3 main.py
+   ```
