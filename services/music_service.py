@@ -1,5 +1,6 @@
 import requests
 import os
+import subprocess
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 
@@ -24,13 +25,17 @@ class MusicService:
                     scope="user-read-currently-playing"
                 )
                 self.sp = spotipy.Spotify(auth_manager=auth_manager)
-            except Exception as e:
-                print(f"Spotify Auth Error: {e}")
+            except Exception: pass
 
     def get_now_playing(self):
-        """Fetches the currently playing track from Spotify, falling back to Last.fm or mock data."""
+        """Fetches the currently playing track. Prioritizes AppleScript (macOS), then Spotify API, then Last.fm."""
 
-        # 1. Try Spotify
+        # 1. Try AppleScript (macOS Focus)
+        apple_data = self._get_from_applescript()
+        if apple_data:
+            return apple_data
+
+        # 2. Try Spotify API
         if self.sp:
             try:
                 current_track = self.sp.currently_playing()
@@ -42,57 +47,57 @@ class MusicService:
                         "album": item['album']['name'],
                         "image": item['album']['images'][0]['url'] if item['album']['images'] else None,
                         "is_playing": current_track['is_playing'],
-                        "source": "Spotify",
+                        "source": "Spotify API",
                         "is_mock": False
                     }
-            except Exception as e:
-                print(f"Spotify API Error: {e}")
+            except Exception: pass
 
-        # 2. Try Last.fm
+        # 3. Try Last.fm
         if self.lastfm_api_key and self.lastfm_api_key != "YOUR_API_KEY":
             try:
                 base_url = "http://ws.audioscrobbler.com/2.0/"
                 params = {
-                    "method": "user.getrecenttracks",
-                    "user": self.lastfm_username,
-                    "api_key": self.lastfm_api_key,
-                    "format": "json",
-                    "limit": 1
+                    "method": "user.getrecenttracks", "user": self.lastfm_username,
+                    "api_key": self.lastfm_api_key, "format": "json", "limit": 1
                 }
                 response = requests.get(base_url, params=params, timeout=5)
-                response.raise_for_status()
                 data = response.json()
-
                 track = data["recenttracks"]["track"][0]
-                is_playing = track.get("@attr", {}).get("nowplaying") == "true"
-
                 return {
-                    "track": track["name"],
-                    "artist": track["artist"]["#text"],
+                    "track": track["name"], "artist": track["artist"]["#text"],
                     "album": track["album"]["#text"],
                     "image": track["image"][-1]["#text"] if track["image"] else None,
-                    "is_playing": is_playing,
-                    "source": "Last.fm",
-                    "is_mock": False
+                    "is_playing": track.get("@attr", {}).get("nowplaying") == "true",
+                    "source": "Last.fm", "is_mock": False
                 }
-            except Exception as e:
-                print(f"Last.fm API Error: {e}")
+            except Exception: pass
 
-        # 3. Fallback to Mock
         return self._get_mock_data()
 
-    def _get_mock_data(self):
-        """Returns mock track data."""
-        return {
-            "track": "Starboy",
-            "artist": "The Weeknd",
-            "album": "Starboy",
-            "image": "https://lastfm.freetls.fastly.net/i/u/300x300/e9d6d5669b32e01b446f7f1412e6b208.png",
-            "is_playing": True,
-            "source": "Mock",
-            "is_mock": True
-        }
+    def _get_from_applescript(self):
+        """Executes AppleScript to get Spotify info (macOS only)."""
+        script_path = os.path.join(os.path.dirname(__file__), "..", "scripts", "get_spotify_info.applescript")
+        if not os.path.exists(script_path):
+            return None
 
-if __name__ == "__main__":
-    service = MusicService()
-    print(service.get_now_playing())
+        try:
+            # osascript is only available on macOS
+            result = subprocess.run(["osascript", script_path], capture_output=True, text=True, timeout=2)
+            if result.returncode == 0 and result.stdout.strip():
+                parts = result.stdout.strip().split("|")
+                if len(parts) >= 5 and parts[0] != "stopped":
+                    return {
+                        "track": parts[1], "artist": parts[2], "album": parts[3],
+                        "image": parts[4] if parts[4] else None,
+                        "is_playing": parts[0] == "playing",
+                        "source": "AppleScript", "is_mock": False
+                    }
+        except Exception: pass
+        return None
+
+    def _get_mock_data(self):
+        return {
+            "track": "Starboy", "artist": "The Weeknd", "album": "Starboy",
+            "image": "https://lastfm.freetls.fastly.net/i/u/300x300/e9d6d5669b32e01b446f7f1412e6b208.png",
+            "is_playing": True, "source": "Mock", "is_mock": True
+        }
